@@ -1,3 +1,3 @@
 FROM gcr.io/distroless/static
-ENTRYPOINT ["cronprom", "run"]
+ENTRYPOINT ["/cronprom", "run"]
 COPY cronprom /
