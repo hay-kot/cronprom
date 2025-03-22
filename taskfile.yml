@@ -1,0 +1,69 @@
+version: "3"
+
+env:
+  LOG_LEVEL: "debug"
+  CRONPROM_CONFIG_PATH: ./config.yml
+  CRONPROM_URL: http://127.0.0.1:8080/api/v1/push
+
+tasks:
+  serve:
+    desc: Runs the main application and supports passing CLI args
+    cmds:
+      - go run *.go serve {{ .CLI_ARGS }}
+    silent: false
+
+  push:
+    desc: Runs the main application and supports passing CLI args
+    cmds:
+      - go run *.go push {{ .CLI_ARGS }}
+    silent: false
+
+  build:
+    desc: Builds the backend binary
+    cmds:
+      - goreleaser build --snapshot --clean
+
+  test:
+    desc: Runs all go tests using gotestsum - supports passing gotestsum args
+    cmds:
+      - gotestsum {{ .CLI_ARGS }} ./...
+
+  test:watch:
+    desc: Runs all go tests using gotestsum in watch mode
+    cmds:
+      - gotestsum --watch -- -v ./...
+
+  coverage:
+    desc: Runs all go tests with -race flag and generates a coverage report
+    cmds:
+      - go test -race -coverprofile=coverage.out -covermode=atomic ./... -v -cover
+    silent: true
+
+  tidy:
+    desc: Runs go mod tidy on the backend
+    cmds:
+      - go mod tidy
+
+  lint:
+    desc: Runs golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  pr:
+    desc: Runs all go test and lint related tasks for PRs
+    cmds:
+      - task: tidy
+      - task: lint
+      - task: test
+
+  gen:enums:
+    desc: Runs the go enumeration generator
+    vars:
+      # Add files that have enumeration definitions here, and then copy this
+      # array to the sources file to avoid re-work on subsequent generations.
+      files:
+        - ./internal/data/config/config.go
+    cmds:
+      - go-enum {{ range $idx, $v := .files }} --file={{ $v }} {{ end }}
+    sources:
+      - ./internal/data/config/config.go

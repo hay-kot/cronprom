@@ -1,0 +1,35 @@
+# Cron Monitoring Service Configuration
+# Web Settings
+web:
+  address: :8080
+
+# Global settings
+global:
+  namespace: "cron_monitor"
+  refresh_interval: "30s"
+
+# Metrics definitions
+metrics:
+  - name: "job_last_success"
+    description: "Timestamp of the last successful job execution"
+    type: "gauge"
+    labels:
+      - "job_name"
+      - "environment"
+    default_value: 0
+
+  - name: "job_duration_seconds"
+    description: "Duration of job execution in seconds"
+    type: "histogram"
+    labels:
+      - "job_name"
+      - "environment"
+    buckets: [0.1, 0.5, 1, 5, 10, 30, 60, 300, 600]
+
+  - name: "job_failures_total"
+    description: "Total number of job failures"
+    type: "counter"
+    labels:
+      - "job_name"
+      - "environment"
+      - "error_type"
