@@ -1,7 +1,5 @@
 # cronprom
 
-
-
 ## Installation
 
 ```bash
