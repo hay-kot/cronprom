@@ -1,3 +1,4 @@
 FROM gcr.io/distroless/static
-ENTRYPOINT ["/cronprom", "run"]
+ENTRYPOINT ["/cronprom", "serve"]
+EXPOSE 8080
 COPY cronprom /
