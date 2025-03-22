@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/hay-kot/cronprom/internal/data/config"
 	"github.com/hay-kot/cronprom/internal/services/collector"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -60,16 +61,22 @@ func (h *MetricHandler) PushHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	metricType, err := config.ParseMetricType(update.Type)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	// Process the update based on metric type
 	var updateErr error
-	switch update.Type {
-	case "gauge":
+	switch metricType {
+	case config.MetricTypeGauge:
 		updateErr = h.collector.UpdateGauge(update.Name, update.Value, update.Labels)
-	case "counter":
+	case config.MetricTypeCounter:
 		updateErr = h.collector.IncrementCounterBy(update.Name, update.Value, update.Labels)
-	case "histogram":
+	case config.MetricTypeHistogram:
 		updateErr = h.collector.ObserveHistogram(update.Name, update.Value, update.Labels)
-	case "summary":
+	case config.MetricTypeSummary:
 		updateErr = h.collector.ObserveSummary(update.Name, update.Value, update.Labels)
 	default:
 		http.Error(w, fmt.Sprintf("Unsupported metric type: %s", update.Type), http.StatusBadRequest)
